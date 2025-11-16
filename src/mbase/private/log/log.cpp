@@ -19,7 +19,7 @@
 #endif
 
 // conditional external headers -------------------------
-#if MBASE_PLATFORM_LINUX
+#if MBASE_PLATFORM_LINUX || MBASE_PLATFORM_WEB
 # include "spdlog/sinks/stdout_color_sinks.h"
 #endif
 
@@ -167,7 +167,7 @@ private:
   std::string tag_;
 };
 
-#elif MBASE_PLATFORM_LINUX
+#elif MBASE_PLATFORM_LINUX || MBASE_PLATFORM_WEB
 
 class LinuxConsoleSink final : public ICustomSink {
 public:
@@ -379,7 +379,7 @@ void Logger::Initialize() {
 #if MBASE_PLATFORM_WINDOWS
   auto console_sink = std::make_shared<WincolorStdoutSink>();
   auto file_sink = std::make_shared<SimpleFileSink>(name);
-#elif MBASE_PLATFORM_LINUX
+#elif MBASE_PLATFORM_LINUX || MBASE_PLATFORM_WEB
   auto console_sink = std::make_shared<LinuxConsoleSink>();
 #elif MBASE_PLATFORM_ANDROID
   auto console_sink = std::make_shared<AndroidSink>("machina");

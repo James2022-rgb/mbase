@@ -8,6 +8,7 @@
 #include <string>
 
 // public project headers -------------------------------
+#include "mbase/public/platform.h"
 #include "mbase/public/access.h"
 
 namespace mbase {
@@ -152,11 +153,17 @@ namespace detail {
 
 inline void hash_combine_impl(size_t& seed, size_t value)
 {
+#if MBASE_PLATFORM_32_BIT
+  static_assert(sizeof(size_t) == sizeof(uint32_t));
+
+  seed ^= value + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+#elif MBASE_PLATFORM_64_BIT
   static_assert(sizeof(size_t) == sizeof(uint64_t));
 
   // https://suzulang.com/cpp-64bit-hash-combine/
   // https://stackoverflow.com/questions/8513911/how-to-create-a-good-hash-combine-with-64-bit-output-inspired-by-boosthash-co
   seed ^= value + 0x9e3779b97f4a7c15 + (seed << 12) + (seed >> 4);
+#endif
 }
 
 }
