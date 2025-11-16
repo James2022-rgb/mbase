@@ -1,0 +1,178 @@
+#pragma once
+
+#include <array>
+#include <vector>
+
+#include "mbase/container.h"
+
+namespace mbase {
+
+struct ReinterpretTagType {};
+static constexpr ReinterpretTagType Reinterpret;
+
+template<class T>
+class [[deprecated("Use std::span introduced in C++20")]] ArrayProxy {
+public:
+  using element_type = T;
+  using value_type = std::remove_cv_t<T>;
+  using size_type = size_t;
+  using difference_type = std::ptrdiff_t;
+  using pointer = element_type*;
+  using const_pointer = element_type const*;
+  using reference = element_type&;
+  using const_reference = element_type const&;
+  using iterator = pointer;
+  using const_iterator = const_pointer;
+  using reverse_iterator = std::reverse_iterator<iterator>;
+  using const_reverse_iterator = std::reverse_iterator<const_iterator>;
+
+  constexpr ArrayProxy() : ptr_(nullptr), count_(0) {}
+  constexpr ArrayProxy(ArrayProxy const& rhs) : ptr_(rhs.ptr_), count_(rhs.count_) {}
+  constexpr ArrayProxy(ArrayProxy&& rhs) noexcept :
+      ArrayProxy() {
+    swap(*this, rhs);
+  }
+
+  constexpr ArrayProxy& operator=(ArrayProxy const& rhs) {
+    ptr_   = rhs.ptr_;
+    count_ = rhs.count_;
+
+    return *this;
+  }
+  constexpr ArrayProxy& operator=(ArrayProxy&& rhs) noexcept {
+    operator=(rhs);
+
+    rhs.ptr_   = nullptr;
+    rhs.count_ = 0;
+
+    return *this;
+  }
+
+  constexpr ArrayProxy(std::nullptr_t) : ptr_(nullptr), count_(0) {}
+
+  ArrayProxy(element_type& ptr) : ptr_(&ptr), count_(1) {}
+
+  ArrayProxy(T* ptr, size_t count) : ptr_(ptr), count_(count) {}
+  template<class U = T, std::enable_if_t<std::is_const_v<U>, int> = 0>
+  ArrayProxy(T const* ptr, size_t count) : ptr_(const_cast<T*>(ptr)), count_(count) {}
+
+  ArrayProxy(std::initializer_list<T>& data) : ptr_(data.begin()), count_(size_t(data.size())) {}
+  template<class U = T,
+           std::enable_if_t<std::is_const_v<U>, int> = 0>
+  ArrayProxy(std::initializer_list<std::remove_const_t<T>>& data) : ptr_(data.begin()), count_(size_t(data.size())) {}
+  ArrayProxy(std::initializer_list<T> const& data) : ptr_(data.begin()), count_(size_t(data.size())) {}
+  template<class U = T,
+           std::enable_if_t<std::is_const_v<U>, int> = 0>
+  ArrayProxy(std::initializer_list<std::remove_const_t<T>> const& data) : ptr_(data.begin()), count_(size_t(data.size())) {}
+
+  // std::array
+  template<size_t N>
+  ArrayProxy(std::array<std::remove_const_t<T>, N>& data) : ptr_(data.data()), count_(N) {}
+  template<size_t N>
+  ArrayProxy(std::array<std::remove_const_t<T>, N> const& data) : ptr_(const_cast<T*>(data.data())), count_(N) {}
+
+  // std::vector
+  template<class Allocator = std::allocator<std::remove_const_t<T>>,
+           class U = T,
+           std::enable_if_t<!std::is_const_v<U>, int> = 0>
+  ArrayProxy(std::vector<T, Allocator>& data) : ptr_(data.data()), count_(size_t(data.size())) {}
+  template<class Allocator = std::allocator<std::remove_const_t<T>>,
+           class U = T,
+           std::enable_if_t<std::is_const_v<U>, int> = 0>
+  ArrayProxy(std::vector<std::remove_const_t<T>, Allocator>& data) : ptr_(data.data()), count_(size_t(data.size())) {}
+  template<class Allocator = std::allocator<std::remove_const_t<T>>,
+           class U = T,
+           std::enable_if_t<!std::is_const_v<U>, int> = 0>
+  ArrayProxy(std::vector<T, Allocator> const& data) : ptr_(data.data()), count_(size_t(data.size())) {}
+  template<class Allocator = std::allocator<std::remove_const_t<T>>,
+           class U = T,
+           std::enable_if_t<std::is_const_v<U>, int> = 0>
+  ArrayProxy(std::vector<std::remove_const_t<T>, Allocator> const& data) : ptr_(data.data()), count_(size_t(data.size())) {}
+
+  // SmallVector
+  template<size_t InitialCapacity, size_t Alignment>
+  ArrayProxy(SmallVector<std::remove_const_t<T>, InitialCapacity, Alignment>& data) : ptr_(data.data()), count_(size_t(data.size())) {}
+  template<size_t InitialCapacity, size_t Alignment>
+  ArrayProxy(SmallVector<std::remove_const_t<T>, InitialCapacity, Alignment> const& data) : ptr_(const_cast<T*>(data.data())), count_(size_t(data.size())) {}
+
+  // StaticVector
+  template<size_t Capacity, size_t Alignment>
+  ArrayProxy(StaticVector<T, Capacity, Alignment>& data) : ptr_(data.data()), count_(size_t(data.size())) {}
+  template<size_t Capacity, size_t Alignment,
+           class U = T,
+           std::enable_if_t<std::is_const_v<U>, int> = 0>
+  ArrayProxy(StaticVector<std::remove_const_t<T>, Capacity, Alignment>& data) : ptr_(data.data()), count_(size_t(data.size())) {}
+  template<size_t Capacity, size_t Alignment>
+  ArrayProxy(StaticVector<T, Capacity, Alignment> const& data) : ptr_(data.data()), count_(size_t(data.size())) {}
+  template<size_t Capacity, size_t Alignment,
+           class U = T,
+           std::enable_if_t<std::is_const_v<U>, int> = 0>
+  ArrayProxy(StaticVector<std::remove_const_t<T>, Capacity, Alignment> const& data) : ptr_(data.data()), count_(size_t(data.size())) {}
+
+  template<class SourceT>
+  ArrayProxy(ReinterpretTagType, SourceT* contiguous_array_data, size_t element_count) :
+      ptr_(reinterpret_cast<T*>(contiguous_array_data)),
+      count_(sizeof(SourceT) * element_count / sizeof(T)) {
+  }
+
+  template<class Allocator = std::allocator<std::remove_const_t<T>>>
+  operator std::vector<std::remove_const_t<T>, Allocator>() const { return { begin(), end() }; }
+
+  template<size_t InitialCapacity>
+  operator SmallVector<std::remove_const_t<T>, InitialCapacity>() const { return { begin(), end() }; }
+  template<size_t Capacity>
+  operator StaticVector<std::remove_const_t<T>, Capacity>() const { return { begin(), end() }; }
+
+  const_iterator begin() const { return ptr_; }
+  const_iterator end() const { return ptr_ + count_; }
+  iterator begin() { return ptr_; }
+  iterator end() { return ptr_ + count_; }
+  const_iterator cbegin() const noexcept { return begin(); }
+  const_iterator cend() const noexcept { return end(); }
+
+  const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator(end()); }
+  const_reverse_iterator rend() const noexcept { return reverse_iterator(begin()); }
+  reverse_iterator rbegin() noexcept { return reverse_iterator(end()); }
+  reverse_iterator rend() noexcept { return reverse_iterator(begin()); }
+  const_reverse_iterator crbegin() const noexcept { return const_reverse_iterator(cend()); }
+  const_reverse_iterator crend() const noexcept { return const_reverse_iterator(cbegin()); }
+
+  const_reference front() const { return *ptr_; }
+  const_reference back() const { return *(ptr_ + count_ - 1); }
+  reference front() { return *ptr_; }
+  reference back() { return *(ptr_ + count_ - 1); }
+
+  bool empty() const { return count_ == 0; }
+
+  size_type size() const { return count_; }
+
+  pointer data() const { return ptr_; }
+
+  reference operator[](size_t index) const { return *(ptr_ + index); }
+
+  ArrayProxy subset(size_t offset, size_t count) const {
+    return ArrayProxy(ptr_ + offset, count);
+  }
+  ArrayProxy subset(size_t offset) const {
+    return subset(offset, count_ - offset);
+  }
+
+  ArrayProxy first(size_t count) const {
+    return subset(0, count);
+  }
+  ArrayProxy last(size_t count) const {
+    return subset(count_ - count, count);
+  }
+
+  friend void swap(ArrayProxy& lhs, ArrayProxy& rhs) noexcept {
+    using std::swap;
+
+    swap(lhs.ptr_, rhs.ptr_);
+    swap(lhs.count_, rhs.count_);
+  }
+private:
+  element_type* ptr_ = nullptr;
+  size_t count_ = 0;
+};
+
+} // namespace mbase

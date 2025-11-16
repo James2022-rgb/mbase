@@ -1,0 +1,35 @@
+// my header --------------------------------------------
+#include "mbase/public/memory.h"
+
+// c++ headers ------------------------------------------
+#include <cstdlib>
+
+// project headers --------------------------------------
+#include "mbase/public/platform.h"
+#include "mbase/public/log.h"
+
+namespace mbase {
+
+void* AlignedAlloc(uint64_t size, uint64_t alignment) {
+#if MBASE_PLATFORM_WINDOWS
+  return _aligned_malloc(size, alignment);
+#else
+  // Assume POSIX
+  void* block = nullptr;
+  posix_memalign(&block, alignment, size);
+  if (block == nullptr) {
+    MBASE_LOG_ERROR("Failed to allocate memory; size:{}, alignment:{}", size, alignment);
+  }
+  return block;
+#endif
+}
+void AlignedFree(void* block) {
+#if MBASE_PLATFORM_WINDOWS
+  _aligned_free(block);
+#else
+  // Assume POSIX
+  free(block);
+#endif
+}
+
+} // namespace mbase

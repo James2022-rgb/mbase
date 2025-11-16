@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <!-- mbase::ArrayProxy -->
+  <Type Name="mbase::ArrayProxy&lt;*&gt;">
+    <DisplayString>{{ size={count_} }}</DisplayString>
+    <Expand>
+      <Item Name="[size]">count_</Item>
+      <ArrayItems>
+        <Size>count_</Size>
+        <ValuePointer>ptr_</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+  <!-- mbase::StaticVectorImpl -->
+  <Type Name="mbase::StaticVectorImpl&lt;*&gt;">
+    <DisplayString>{{ size={size_ }}</DisplayString>
+    <Expand>
+      <Item Name="[size]">size_</Item>
+      <Item Name="[capacity]" ExcludeView="simple">$T2</Item>
+      <Item Name="[alignment]" ExcludeView="simple">$T3</Item>
+      <ArrayItems>
+        <Size>size_</Size>
+        <ValuePointer>reinterpret_cast&lt;value_type*&gt;(&amp;storage_)</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+  <!-- mbase::SmallVector -->
+  <Type Name="mbase::SmallVector&lt;*&gt;">
+    <DisplayString>{{ size={size_ }}</DisplayString>
+    <Expand>
+      <Item Name="[size]">size_</Item>
+      <Item Name="[capacity]">capacity_</Item>
+      <Item Name="[initial_capacity]" ExcludeView="simple">$T2</Item>
+      <Item Name="[alignment]" ExcludeView="simple">$T3</Item>
+      <ArrayItems>
+        <Size>size_</Size>
+        <ValuePointer>reinterpret_cast&lt;value_type*&gt;(storage_pointer_)</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+</AutoVisualizer>
