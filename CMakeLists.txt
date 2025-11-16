@@ -59,7 +59,7 @@ target_include_directories(${TARGET_NAME}
 # We don't need to build the xxhsum binary.
 option(XXHASH_BUILD_XXHSUM "Build the xxhsum binary" OFF)
 
-add_subdirectory("thirdparty/xxHash/cmake_unofficial")
+add_subdirectory("thirdparty/xxHash/build/cmake" xxhash_build EXCLUDE_FROM_ALL)
 
 set_target_properties(xxhash PROPERTIES FOLDER "external")
 

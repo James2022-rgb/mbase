@@ -23,10 +23,10 @@ void AssertTerseImpl(bool condition, std::string_view condition_str, nostd::sour
 }
 
 template<typename... Args>
-void AssertImpl(bool condition, std::string_view condition_str, nostd::source_location source_location, fmt::v10::format_string<Args...> fmt, Args &&...args) {
+void AssertImpl(bool condition, std::string_view condition_str, nostd::source_location source_location, fmt::format_string<Args...> fmt, Args &&...args) {
   if (!condition) {
-    fmt::v10::basic_memory_buffer<char> buf;
-    fmt::vformat_to(fmt::appender(buf), fmt::v10::string_view(fmt), fmt::make_format_args(args...));
+    fmt::basic_memory_buffer<char> buf;
+    fmt::vformat_to(fmt::appender(buf), fmt::string_view(fmt), fmt::make_format_args(args...));
     std::string_view message = std::string_view(buf.data(), buf.size());
     MBASE_LOG_ERROR("Assertion failed at [{}:{}][{}]: {} : {}", source_location.file_name(), source_location.line(), source_location.function_name(), condition_str, message);
     Trap();
