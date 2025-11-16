@@ -194,6 +194,26 @@ private:
   spdlog::sinks::stdout_color_sink_mt inner_;
 };
 
+#elif MBASE_PLATFORM_PSP
+
+// PSP does not have console support for logging.
+// Therefore we only provide an empty sink implementation.
+class PspNullSink final : public ICustomSink {
+public:
+  using BaseType = ICustomSink;
+
+  PspNullSink() = default;
+  ~PspNullSink() override = default;
+  MBASE_DISALLOW_COPY_MOVE(PspNullSink);
+
+  void sink_it_(const spdlog::details::log_msg&) override {
+    // No-op
+  }
+  void flush_() override {
+    // No-op
+  }
+};
+
 #else
 # error "Unsupported platform"
 #endif
@@ -383,6 +403,8 @@ void Logger::Initialize() {
   auto console_sink = std::make_shared<LinuxConsoleSink>();
 #elif MBASE_PLATFORM_ANDROID
   auto console_sink = std::make_shared<AndroidSink>("machina");
+#elif MBASE_PLATFORM_PSP
+  auto console_sink = std::make_shared<PspNullSink>();
 #endif
 
   std::shared_ptr<DistSink> dist_sink = std::make_shared<DistSink>();

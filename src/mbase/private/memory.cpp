@@ -16,8 +16,8 @@ void* AlignedAlloc(uint64_t size, uint64_t alignment) {
 #else
   // Assume POSIX
   void* block = nullptr;
-  posix_memalign(&block, alignment, size);
-  if (block == nullptr) {
+  int ret = posix_memalign(&block, alignment, size);
+  if (ret != 0) {
     MBASE_LOG_ERROR("Failed to allocate memory; size:{}, alignment:{}", size, alignment);
   }
   return block;

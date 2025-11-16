@@ -17,7 +17,7 @@ namespace mbase {
 void Trap() {
 #if MBASE_PLATFORM_WINDOWS
   __debugbreak();
-#elif MBASE_PLATFORM_LINUX || MBASE_PLATFORM_ANDROID
+#elif MBASE_PLATFORM_LINUX || MBASE_PLATFORM_ANDROID || MBASE_PLATFORM_PSP
   __builtin_trap();
 #elif MBASE_PLATFORM_WEB
   emscripten_debugger();
