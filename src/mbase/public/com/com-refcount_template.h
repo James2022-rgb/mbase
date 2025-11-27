@@ -1,8 +1,11 @@
 #pragma once
 
+// c++ headers ------------------------------------------
 #include <type_traits>
 #include <atomic>
+#include <functional>
 
+// public project headers -------------------------------
 #include "mbase/public/assert.h"
 #include "mbase/public/access.h"
 #include "mbase/public/com/com.h"
@@ -39,9 +42,19 @@ public:
     IMbUnknown::ReferenceCount const new_ref_count = --ref_count_;
 
     if (new_ref_count == 0) {
-      delete this;
+      if (deleter_) {
+        deleter_(this);
+      }
+      else {
+        delete this;
+      }
     }
     return new_ref_count;
+  }
+
+
+  void SetDeleter(std::function<void(void*)> deleter) {
+    deleter_ = deleter;
   }
 
 protected:
@@ -50,6 +63,8 @@ protected:
 
 private:
   std::atomic<IMbUnknown::ReferenceCount> ref_count_ { 1 };
+
+  std::function<void(void*)> deleter_ = nullptr;
 };
 
 } // namespace mbase
