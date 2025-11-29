@@ -13,6 +13,8 @@ namespace mbase {
 void* AlignedAlloc(uint64_t size, uint64_t alignment) {
 #if MBASE_PLATFORM_WINDOWS
   return _aligned_malloc(size, alignment);
+#elif MBASE_PLATFORM_PSP
+  return aligned_alloc(alignment, size);
 #else
   // Assume POSIX
   void* block = nullptr;
@@ -26,6 +28,8 @@ void* AlignedAlloc(uint64_t size, uint64_t alignment) {
 void AlignedFree(void* block) {
 #if MBASE_PLATFORM_WINDOWS
   _aligned_free(block);
+#elif MBASE_PLATFORM_PSP
+  free(block);
 #else
   // Assume POSIX
   free(block);
