@@ -17,10 +17,18 @@ void* AlignedAlloc(uint64_t size, uint64_t alignment) {
   return aligned_alloc(alignment, size);
 #else
   // Assume POSIX
+
+  if (alignment < sizeof(void*)) {
+    alignment = sizeof(void*);
+  }
+
   void* block = nullptr;
   int ret = posix_memalign(&block, alignment, size);
   if (ret != 0) {
-    MBASE_LOG_ERROR("Failed to allocate memory; size:{}, alignment:{}", size, alignment);
+    char err_name[32];
+    strerror_r(ret, err_name, sizeof(err_name));
+
+    MBASE_LOG_ERROR("Failed to allocate memory; size:{}, alignment:{} err: {}", size, alignment, err_name);
   }
   return block;
 #endif
