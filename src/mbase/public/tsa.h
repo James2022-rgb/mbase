@@ -185,6 +185,37 @@ private:
   bool owned_;
 };
 
+/// `std::shared_lock` with try_lock semantics and TSA support.
+template<class Mutex>
+class MBASE_SCOPED_CAPABILITY TrySharedLockGuard {
+public:
+  explicit TrySharedLockGuard(Mutex& mutex) MBASE_TRY_ACQUIRE_SHARED(true, mutex) :
+      mutex_(mutex),
+      owned_(mutex_.try_lock_shared())
+  {
+  }
+
+  ~TrySharedLockGuard() MBASE_RELEASE() {
+    if (owned_) {
+      mutex_.unlock_shared();
+    }
+  }
+
+  MBASE_DISALLOW_COPY(TrySharedLockGuard);
+
+  [[nodiscard]] bool owns_lock() const noexcept {
+    return owned_;
+  }
+
+  explicit operator bool() const noexcept {
+    return owned_;
+  }
+
+private:
+  Mutex& mutex_;
+  bool owned_;
+};
+
 template<class Mutex>
 class MBASE_SCOPED_CAPABILITY Lock {
 public:
