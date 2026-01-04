@@ -97,7 +97,7 @@ public:
       weak_->AddRef();
     }
   }
-  MBASE_FORCE_INLINE ThisType& operator=(ThisType const& rhs) {
+  MBASE_FORCE_INLINE ThisType& operator=(ThisType& rhs) {
     if (weak_ != nullptr) {
       weak_->RemoveRef();
     }

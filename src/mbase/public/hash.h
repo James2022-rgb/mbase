@@ -136,7 +136,7 @@ public:
   }
 
 private:
-  using Storage = std::byte[detail::HasherStateTraits<ValueType>::kStorageSize];
+  using Storage = std::byte[detail::HasherStateTraits<typename detail::integer_traits<ValueType>::stdint_type>::kStorageSize];
   static constexpr ValueType kDefaultValue = 0;
 
   alignas(detail::HasherStateTraits<ValueType>::kStorageAlign) Storage storage_ {};
