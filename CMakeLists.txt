@@ -126,6 +126,7 @@ set(SOURCES_PUBLIC_ROOT
   ${SOURCES_PUBLIC_DIR}/array_proxy.h
   ${SOURCES_PUBLIC_DIR}/assert.h
   ${SOURCES_PUBLIC_DIR}/bitflags.h
+  ${SOURCES_PUBLIC_DIR}/call.h
   ${SOURCES_PUBLIC_DIR}/container.h
   ${SOURCES_PUBLIC_DIR}/hash.h
   ${SOURCES_PUBLIC_DIR}/format.h
