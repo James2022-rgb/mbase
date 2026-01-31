@@ -3,7 +3,7 @@
 #include <array>
 #include <vector>
 
-#include "mbase/container.h"
+#include "mbase/public/container.h"
 
 namespace mbase {
 
