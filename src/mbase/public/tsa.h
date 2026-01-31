@@ -107,7 +107,7 @@ public:
   void lock_shared() MBASE_ACQUIRE_SHARED() {
     lockable_.lock_shared();
   }
-  void unlock_shared() MBASE_RELEASE() {
+  void unlock_shared() MBASE_RELEASE_SHARED() {
     lockable_.unlock_shared();
   }
   bool try_lock_shared() MBASE_TRY_ACQUIRE_SHARED(true) {
@@ -166,13 +166,13 @@ public:
   }
 
   SharedLockGuard(SharedLockGuard&& rhs) MBASE_NO_THREAD_SAFETY_ANALYSIS :
-  mutex_(rhs.mutex_),
+    mutex_(rhs.mutex_),
     owned_(rhs.owned_)
   {
     rhs.owned_ = false; // Transfer ownership.
   }
 
-  ~SharedLockGuard() MBASE_RELEASE() {
+  ~SharedLockGuard() MBASE_RELEASE_SHARED() {
     if (owned_) {
       mutex_.unlock_shared();
     }
@@ -195,7 +195,7 @@ public:
   {
   }
 
-  ~TrySharedLockGuard() MBASE_RELEASE() {
+  ~TrySharedLockGuard() MBASE_RELEASE_SHARED() {
     if (owned_) {
       mutex_.unlock_shared();
     }
