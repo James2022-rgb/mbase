@@ -11,7 +11,7 @@ struct ReinterpretTagType {};
 static constexpr ReinterpretTagType Reinterpret;
 
 template<class T>
-class [[deprecated("Use std::span introduced in C++20")]] ArrayProxy {
+class ArrayProxy {
 public:
   using element_type = T;
   using value_type = std::remove_cv_t<T>;
