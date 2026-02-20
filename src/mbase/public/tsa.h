@@ -94,13 +94,13 @@ public:
   ~SharedLockable() = default;
   MBASE_DISALLOW_COPY(SharedLockable);
 
-  void lock() MBASE_ACQUIRE_SHARED() {
+  void lock() MBASE_ACQUIRE() {
     lockable_.lock();
   }
   void unlock() MBASE_RELEASE() {
     lockable_.unlock();
   }
-  bool try_lock() MBASE_TRY_ACQUIRE_SHARED(true) {
+  bool try_lock() MBASE_TRY_ACQUIRE(true) {
     return lockable_.try_lock();
   }
 
@@ -172,7 +172,7 @@ public:
     rhs.owned_ = false; // Transfer ownership.
   }
 
-  ~SharedLockGuard() MBASE_RELEASE_SHARED() {
+  ~SharedLockGuard() MBASE_RELEASE() {
     if (owned_) {
       mutex_.unlock_shared();
     }
@@ -195,7 +195,7 @@ public:
   {
   }
 
-  ~TrySharedLockGuard() MBASE_RELEASE_SHARED() {
+  ~TrySharedLockGuard() MBASE_RELEASE() {
     if (owned_) {
       mutex_.unlock_shared();
     }
