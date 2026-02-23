@@ -103,6 +103,7 @@ source_group("Public/Com" FILES ${SOURCES_PUBLIC_COM})
 
 set(SOURCES_PUBLIC_LOG
   ${SOURCES_PUBLIC_DIR}/log/log.h
+  ${SOURCES_PUBLIC_DIR}/log/log_c.h
 )
 source_group("Public/Log" FILES ${SOURCES_PUBLIC_LOG})
 
@@ -147,6 +148,7 @@ set(SOURCES_PRIVATE_DIR ${SRC_DIR}/mbase/private)
 set(SOURCE_PRIVATE_LOG_DIR ${SOURCES_PRIVATE_DIR}/log)
 set(SOURCES_PRIVATE_LOG
   ${SOURCE_PRIVATE_LOG_DIR}/log.cpp
+  ${SOURCE_PRIVATE_LOG_DIR}/log_c.cpp
 )
 source_group("Private/Log" FILES ${SOURCES_PRIVATE_LOG})
 

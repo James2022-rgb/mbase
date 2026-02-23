@@ -9,7 +9,7 @@
 #endif
 
 #if !defined(MBASE_NO_THROW)
-# if defined(_MSC_VER)
+# if defined(_MSC_VER) && defined(__cplusplus)
 #  define MBASE_NO_THROW __declspec(nothrow)
 # else
 #  define MBASE_NO_THROW
