@@ -124,6 +124,7 @@ source_group("Public/Profiling" FILES ${SOURCES_PUBLIC_PROFILING})
 
 set(SOURCES_PUBLIC_ROOT
   ${SOURCES_PUBLIC_DIR}/access.h
+  ${SOURCES_PUBLIC_DIR}/accessor.h
   ${SOURCES_PUBLIC_DIR}/array_proxy.h
   ${SOURCES_PUBLIC_DIR}/assert.h
   ${SOURCES_PUBLIC_DIR}/bitflags.h
