@@ -1,8 +1,18 @@
 #pragma once
 
+#include <string>
 #include <string_view>
 
-#include "spdlog/fmt/fmt.h"
+#ifdef _MSC_VER
+# pragma warning(push)
+# pragma warning(disable: 4459) // declaration of '...' hides global declaration
+#endif
+
+#include <fmt/format.h>
+
+#ifdef _MSC_VER
+# pragma warning(pop)
+#endif
 
 #include "mbase/public/trap.h"
 #include "mbase/public/log.h"
@@ -25,9 +35,7 @@ void AssertTerseImpl(bool condition, std::string_view condition_str, nostd::sour
 template<typename... Args>
 void AssertImpl(bool condition, std::string_view condition_str, nostd::source_location source_location, fmt::format_string<Args...> fmt, Args &&...args) {
   if (!condition) {
-    fmt::basic_memory_buffer<char> buf;
-    fmt::vformat_to(fmt::appender(buf), fmt::string_view(fmt), fmt::make_format_args(args...));
-    std::string_view message = std::string_view(buf.data(), buf.size());
+    std::string message = fmt::format(fmt, std::forward<Args>(args)...);
     MBASE_LOG_ERROR("Assertion failed at [{}:{}][{}]: {} : {}", source_location.file_name(), source_location.line(), source_location.function_name(), condition_str, message);
     Trap();
   }

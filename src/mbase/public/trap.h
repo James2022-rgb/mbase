@@ -3,9 +3,6 @@
 // c++ headers ------------------------------------------
 #include <string_view>
 
-// external headers -------------------------------------
-#include "spdlog/fmt/fmt.h"
-
 namespace mbase {
 
 void Trap();

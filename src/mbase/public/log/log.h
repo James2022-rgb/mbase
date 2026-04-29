@@ -1,15 +1,25 @@
 #pragma once
 
-#include <string_view>
+#include <chrono>
 #include <functional>
+#include <memory>
 #include <optional>
-#include <type_traits>
+#include <string>
+#include <string_view>
 
 #include "source_location/source_location.hpp"
 
-#include "spdlog/spdlog.h"
-#include "spdlog/sinks/base_sink.h"
-#include "spdlog/fmt/ostr.h"
+#ifdef _MSC_VER
+# pragma warning(push)
+// Defensive: silence C4459 if a fmt version we pin starts shadowing names internally.
+# pragma warning(disable: 4459) // declaration of '...' hides global declaration
+#endif
+
+#include <fmt/format.h>
+
+#ifdef _MSC_VER
+# pragma warning(pop)
+#endif
 
 namespace mbase {
 
@@ -46,59 +56,57 @@ public:
     kCritical
   };
 
-  using LogCallback = std::function<void(Level, spdlog::log_clock::time_point, std::string_view)>;
+  using LogCallback = std::function<void(Level, std::chrono::system_clock::time_point, std::string_view)>;
 
   static void Initialize();
   static void Shutdown();
 
   static void SetLevel(Level value);
 
+  /// Non-template entry point used by the templates below. Defined in log.cpp;
+  /// takes an already-formatted payload.
+  static void LogImpl(MBASE_LOG_TAG_ARGUMENT, Level level, std::string_view payload);
+
   template<typename... Args>
-  static void Log(MBASE_LOG_TAG_ARGUMENT, Level level, spdlog::format_string_t<Args...> fmt, Args &&...args) {
-    if (tag.has_value()) {
-      spdlog::source_loc source_loc { tag->location.file_name(), static_cast<int>(tag->location.line()), tag->location.function_name() };
-      logger_->log(source_loc, ToSpdLogLevel(level), fmt, std::forward<Args>(args)...);
-    }
-    else {
-      logger_->log(ToSpdLogLevel(level), fmt, std::forward<Args>(args)...);
-    }
+  static void Log(MBASE_LOG_TAG_ARGUMENT, Level level, fmt::format_string<Args...> fmt, Args &&...args) {
+    LogImpl(tag, level, fmt::format(fmt, std::forward<Args>(args)...));
   }
 
   template<typename... Args>
-  static void Trace(MBASE_LOG_TAG_ARGUMENT, spdlog::format_string_t<Args...> fmt, Args &&...args) {
-    Log(tag, Level::kTrace, fmt, std::forward<Args>(args)...);
+  static void Trace(MBASE_LOG_TAG_ARGUMENT, fmt::format_string<Args...> fmt, Args &&...args) {
+    LogImpl(tag, Level::kTrace, fmt::format(fmt, std::forward<Args>(args)...));
   }
 
   template<typename... Args>
-  static void Debug(MBASE_LOG_TAG_ARGUMENT, spdlog::format_string_t<Args...> fmt, Args &&...args) {
-    Log(tag, Level::kDebug, fmt, std::forward<Args>(args)...);
+  static void Debug(MBASE_LOG_TAG_ARGUMENT, fmt::format_string<Args...> fmt, Args &&...args) {
+    LogImpl(tag, Level::kDebug, fmt::format(fmt, std::forward<Args>(args)...));
   }
 
   template<typename... Args>
-  static void Info(MBASE_LOG_TAG_ARGUMENT, spdlog::format_string_t<Args...> fmt, Args &&...args) {
-    Log(tag, Level::kInfo, fmt, std::forward<Args>(args)...);
+  static void Info(MBASE_LOG_TAG_ARGUMENT, fmt::format_string<Args...> fmt, Args &&...args) {
+    LogImpl(tag, Level::kInfo, fmt::format(fmt, std::forward<Args>(args)...));
   }
 
   template<typename... Args>
-  static void Warn(MBASE_LOG_TAG_ARGUMENT, spdlog::format_string_t<Args...> fmt, Args &&...args) {
-    Log(tag, Level::kWarn, fmt, std::forward<Args>(args)...);
+  static void Warn(MBASE_LOG_TAG_ARGUMENT, fmt::format_string<Args...> fmt, Args &&...args) {
+    LogImpl(tag, Level::kWarn, fmt::format(fmt, std::forward<Args>(args)...));
   }
 
   template<typename... Args>
-  static void Error(MBASE_LOG_TAG_ARGUMENT, spdlog::format_string_t<Args...> fmt, Args &&...args) {
-    Log(tag, Level::kError, fmt, std::forward<Args>(args)...);
+  static void Error(MBASE_LOG_TAG_ARGUMENT, fmt::format_string<Args...> fmt, Args &&...args) {
+    LogImpl(tag, Level::kError, fmt::format(fmt, std::forward<Args>(args)...));
   }
 
   template<typename... Args>
-  static void Critical(MBASE_LOG_TAG_ARGUMENT, spdlog::format_string_t<Args...> fmt, Args &&...args) {
-    Log(tag, Level::kCritical, fmt, std::forward<Args>(args)...);
+  static void Critical(MBASE_LOG_TAG_ARGUMENT, fmt::format_string<Args...> fmt, Args &&...args) {
+    LogImpl(tag, Level::kCritical, fmt::format(fmt, std::forward<Args>(args)...));
   }
 
-  using Mutex = std::mutex;
-
-  class IDistSink : public spdlog::sinks::base_sink<Mutex> {
+  /// mbase-owned dispatch sink interface. Callers can register a `LogCallback`
+  /// to receive log events.
+  class IDistSink {
   public:
-    virtual  ~IDistSink() = default;
+    virtual ~IDistSink() = default;
     IDistSink(IDistSink const&) = delete;
     IDistSink& operator=(IDistSink const&) = delete;
     IDistSink(IDistSink&&) = delete;
@@ -111,12 +119,8 @@ public:
     IDistSink() = default;
   };
 
-  static spdlog::level::level_enum ToSpdLogLevel(Level level);
-  static Level ToLoggerLevel(spdlog::level::level_enum level);
-
-private:
-  static inline std::shared_ptr<spdlog::logger> logger_;
-  static inline std::shared_ptr<IDistSink> dist_sink_;
+  /// Returns the dist sink installed by `Initialize()`, or nullptr if not initialized.
+  static std::shared_ptr<IDistSink> GetDistSink();
 };
 
-} // namespace mabse
+} // namespace mbase
