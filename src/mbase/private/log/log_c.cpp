@@ -4,7 +4,7 @@
 
 extern "C" {
 
-void MbLoggerInitialize(void) { mbase::Logger::Initialize(); }
-void MbLoggerShutdown(void)   { mbase::Logger::Shutdown(); }
+MBASE_NO_THROW void MBASE_STDCALL MbLoggerInitialize(void) { mbase::Logger::Initialize(); }
+MBASE_NO_THROW void MBASE_STDCALL MbLoggerShutdown(void)   { mbase::Logger::Shutdown(); }
 
 } // extern "C"
