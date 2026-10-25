@@ -59,11 +59,20 @@ set(FMT_DOC OFF CACHE BOOL "" FORCE)
 set(FMT_TEST OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(fmt
   GIT_REPOSITORY https://github.com/fmtlib/fmt.git
-  GIT_TAG 11.0.2
+  GIT_TAG 11.2.0
 )
 FetchContent_MakeAvailable(fmt)
 
 set_target_properties(fmt PROPERTIES FOLDER "external")
+
+# PSP newlib lacks flockfile()/funlockfile() implementations that fmt uses.
+# Linked from fmt itself so the archive comes after libfmt on the link line.
+if(PSP)
+  add_library(mbase_psp_stdio_lock STATIC "${SRC_DIR}/mbase/private/platform/psp_stdio_lock.cpp")
+  target_include_directories(mbase_psp_stdio_lock PRIVATE ${SRC_DIR})
+  set_target_properties(mbase_psp_stdio_lock PROPERTIES FOLDER "external")
+  target_link_libraries(fmt PUBLIC mbase_psp_stdio_lock)
+endif()
 
 target_link_libraries(${TARGET_NAME} PUBLIC fmt::fmt)
 

@@ -57,9 +57,12 @@ sink with `Logger::GetDistSink()` to register `AddCallback` / `RemoveCallback`.
 
 ## Dependencies
 
-- `fmt` - Formatting library, fetched via FetchContent (`fmtlib/fmt` 11.0.2)
+- `fmt` - Formatting library, fetched via FetchContent (`fmtlib/fmt` 11.2.0)
   and linked PUBLIC. Consumers can use `fmt::format` and `fmt::format_string`
   directly via `<fmt/format.h>`.
+  On PSP, `fmt` also links `mbase_psp_stdio_lock`
+  (`src/mbase/private/platform/psp_stdio_lock.cpp`), which implements the
+  `flockfile`/`funlockfile` that PSP newlib declares but doesn't provide.
 - `xxHash` - Hash library (submodule)
 - `cereal` - Serialization library (submodule)
 - `source_location` - C++20 source_location polyfill (submodule)
