@@ -83,7 +83,17 @@ target_link_libraries(${TARGET_NAME} PUBLIC fmt::fmt)
 # We don't need to build the xxhsum binary.
 option(XXHASH_BUILD_XXHSUM "Build the xxhsum binary" OFF)
 
+# xxHash's option(BUILD_SHARED_LIBS ... ON) leaks into the cache, making later configures
+# build other libraries (e.g. fmt) as shared. Drop it unless the user set it.
+if(NOT DEFINED CACHE{BUILD_SHARED_LIBS})
+  set(MBASE_UNSET_BUILD_SHARED_LIBS ON)
+endif()
+
 add_subdirectory("thirdparty/xxHash/build/cmake" xxhash_build EXCLUDE_FROM_ALL)
+
+if(MBASE_UNSET_BUILD_SHARED_LIBS)
+  unset(BUILD_SHARED_LIBS CACHE)
+endif()
 
 set_target_properties(xxhash PROPERTIES FOLDER "external")
 
