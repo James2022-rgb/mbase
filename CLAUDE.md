@@ -30,6 +30,7 @@ thirdparty/ - External dependencies
 ## Components
 
 - `assert.h` - Assertion utilities (uses fmt)
+- `bool.h` - `MbBool32` / `MBASE_TRUE` / `MBASE_FALSE` (fixed 32-bit bool, C compatible)
 - `format.h` - String formatting (Commaize, etc.)
 - `hash.h` - Hashing (xxHash)
 - `log.h` - Logging (custom implementation on top of fmt + per-platform sinks)
